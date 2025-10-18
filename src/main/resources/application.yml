@@ -1,3 +1,41 @@
 spring:
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+  application:
+    name: bank-rest
+  datasource:
+    url: ${BANK_REST_DB_URL:jdbc:postgresql://localhost:5433/bank_app}
+    username: ${BANK_REST_DB_USERNAME:bank_user}
+    password: ${BANK_REST_DB_PASSWORD:bank_pass}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+security:
+  jwt:
+    issuer: bank-rest
+    secret: ${BANK_REST_JWT_SECRET:change-me}
+    access-token:
+      ttl: PT15M
+    refresh-token:
+      ttl: P7D
+
+encryption:
+  secret-key: ${BANK_REST_ENCRYPTION_KEY:change-me-too}
