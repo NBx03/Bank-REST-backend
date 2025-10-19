@@ -1,0 +1,84 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-insert-initial-data
+      author: nbx03
+      changes:
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: name
+                  value: ADMIN
+              - column:
+                  name: created_at
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  valueComputed: CURRENT_TIMESTAMP
+        - insert:
+            tableName: roles
+            columns:
+              - column:
+                  name: name
+                  value: USER
+              - column:
+                  name: created_at
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  valueComputed: CURRENT_TIMESTAMP
+        - insert:
+            tableName: users
+            columns:
+              - column:
+                  name: email
+                  value: admin@bank.local
+              - column:
+                  name: username
+                  value: admin
+              - column:
+                  name: password
+                  value: "$2a$10$7EqJtq98hPqEX7fNZaFWoOhi5o1IOzBSSjCIidSOtDz4G.AAK4RDa"
+              - column:
+                  name: first_name
+                  value: System
+              - column:
+                  name: last_name
+                  value: Administrator
+              - column:
+                  name: status
+                  value: ACTIVE
+              - column:
+                  name: created_at
+                  valueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  valueComputed: CURRENT_TIMESTAMP
+        - sql:
+            comment: Привязка роли ADMIN
+            sql: |
+              INSERT INTO user_roles (user_id, role_id)
+              SELECT u.id, r.id
+              FROM users u
+              JOIN roles r ON r.name = 'ADMIN'
+              WHERE u.email = 'admin@bank.local';
+        - sql:
+            comment: Добавление двух стартовых карт админу
+            sql: |
+              INSERT INTO cards (card_number, last_digits, owner_id, expiration_date, status, balance, created_at, updated_at)
+              VALUES
+                ('enc-admin-card-1', '1111', (SELECT id FROM users WHERE email = 'admin@bank.local'), '2030-12-01', 'ACTIVE', 50000.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+                ('enc-admin-card-2', '2222', (SELECT id FROM users WHERE email = 'admin@bank.local'), '2031-06-01', 'ACTIVE', 25000.00, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+        - sql:
+            comment: Пример стартового перевода между картами админов
+            sql: |
+              INSERT INTO card_transfers (from_card_id, to_card_id, amount, status, description, created_at, updated_at)
+              VALUES (
+                (SELECT id FROM cards WHERE card_number = 'enc-admin-card-1'),
+                (SELECT id FROM cards WHERE card_number = 'enc-admin-card-2'),
+                1000.00,
+                'COMPLETED',
+                'Стартовый перевод для тестов',
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              );
