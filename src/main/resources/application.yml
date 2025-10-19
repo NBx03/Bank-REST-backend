@@ -39,3 +39,7 @@ security:
 
 encryption:
   secret-key: ${BANK_REST_ENCRYPTION_KEY:change-me-too}
+
+transfer:
+  limit:
+    daily: ${BANK_REST_DAILY_LIMIT:50000.00}
