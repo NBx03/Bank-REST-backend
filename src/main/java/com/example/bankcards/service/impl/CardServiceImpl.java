@@ -10,6 +10,7 @@ import com.example.bankcards.exception.DuplicateResourceException;
 import com.example.bankcards.exception.ResourceNotFoundException;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
+import com.example.bankcards.service.CardLifecycleService;
 import com.example.bankcards.service.CardService;
 import com.example.bankcards.util.CardMapper;
 import com.example.bankcards.util.CardNumberEncoder;
@@ -28,15 +29,18 @@ public class CardServiceImpl implements CardService {
     private final UserRepository userRepository;
     private final CardMapper cardMapper;
     private final CardNumberEncoder cardNumberEncoder;
+    private final CardLifecycleService cardLifecycleService;
 
     public CardServiceImpl(CardRepository cardRepository,
                            UserRepository userRepository,
                            CardMapper cardMapper,
-                           CardNumberEncoder cardNumberEncoder) {
+                           CardNumberEncoder cardNumberEncoder,
+                           CardLifecycleService cardLifecycleService) {
         this.cardRepository = cardRepository;
         this.userRepository = userRepository;
         this.cardMapper = cardMapper;
         this.cardNumberEncoder = cardNumberEncoder;
+        this.cardLifecycleService = cardLifecycleService;
     }
 
     @Override
@@ -64,20 +68,20 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    @Transactional(Transactional.TxType.SUPPORTS)
     public CardDto getCard(Long cardId) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found: " + cardId));
-        return cardMapper.toDto(card);
+        Card updated = cardLifecycleService.refreshExpiration(card);
+        return cardMapper.toDto(updated);
     }
 
     @Override
-    @Transactional(Transactional.TxType.SUPPORTS)
     public List<CardDto> getUserCards(Long userId) {
         if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("User not found: " + userId);
         }
         return cardRepository.findAllByOwnerId(userId).stream()
+                .map(cardLifecycleService::refreshExpiration)
                 .map(cardMapper::toDto)
                 .collect(Collectors.toList());
     }
@@ -86,11 +90,15 @@ public class CardServiceImpl implements CardService {
     public CardDto changeStatus(Long cardId, CardStatus newStatus) {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found: " + cardId));
+        card = cardLifecycleService.refreshExpiration(card);
         if (card.getStatus() == newStatus) {
             return cardMapper.toDto(card);
         }
         if (card.getStatus() == CardStatus.BLOCKED && newStatus == CardStatus.CLOSED) {
             throw new CardInactiveException("Blocked card cannot be directly closed");
+        }
+        if (card.getStatus() == CardStatus.EXPIRED && newStatus == CardStatus.ACTIVE) {
+            throw new CardInactiveException("Expired card cannot be reactivated");
         }
         card.setStatus(newStatus);
         cardRepository.save(card);
