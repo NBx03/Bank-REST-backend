@@ -10,11 +10,11 @@ import java.util.List;
  */
 public interface CardService {
 
-    CardDto issueCard(Long userId, CreateCardRequestDto request);
+    CardDto issueCard(Long operatorId, Long userId, CreateCardRequestDto request);
 
-    CardDto getCard(Long cardId);
+    CardDto getCard(Long operatorId, Long cardId);
 
-    List<CardDto> getUserCards(Long userId);
+    List<CardDto> getUserCards(Long operatorId, Long userId);
 
-    CardDto changeStatus(Long cardId, CardStatus newStatus);
+    CardDto changeStatus(Long operatorId, Long cardId, CardStatus newStatus);
 }

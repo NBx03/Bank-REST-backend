@@ -2,8 +2,10 @@ package com.example.bankcards.service.impl;
 
 import com.example.bankcards.dto.CreateUserRequestDto;
 import com.example.bankcards.dto.UserDto;
+import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.entity.enums.CardStatus;
 import com.example.bankcards.entity.enums.RoleType;
 import com.example.bankcards.entity.enums.UserStatus;
 import com.example.bankcards.exception.DuplicateResourceException;
@@ -19,9 +21,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
-/**
- * Реализация {@link UserService}.
- */
 @Service
 @Transactional
 public class UserServiceImpl implements UserService {
@@ -83,6 +82,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
         user.setStatus(status);
+        applyStatusToCards(user, status);
         return userMapper.toDto(user);
     }
 
@@ -110,5 +110,17 @@ public class UserServiceImpl implements UserService {
     private Role findOrCreateRole(RoleType roleType) {
         return roleRepository.findByName(roleType)
                 .orElseGet(() -> roleRepository.save(new Role(roleType)));
+    }
+
+    private void applyStatusToCards(User user, UserStatus status) {
+        for (Card card : user.getCards()) {
+            if (status == UserStatus.BLOCKED && card.getStatus() == CardStatus.ACTIVE) {
+                card.setStatus(CardStatus.BLOCKED);
+            } else if (status == UserStatus.ARCHIVED) {
+                card.setStatus(CardStatus.CLOSED);
+            } else if (status == UserStatus.ACTIVE && card.getStatus() == CardStatus.BLOCKED) {
+                card.setStatus(CardStatus.ACTIVE);
+            }
+        }
     }
 }

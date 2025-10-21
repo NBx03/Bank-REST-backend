@@ -9,7 +9,7 @@ import java.util.List;
  */
 public interface TransferService {
 
-    CardTransferDto transfer(CardTransferRequestDto request);
+    CardTransferDto transfer(Long operatorId, CardTransferRequestDto request);
 
-    List<CardTransferDto> getTransfersForCard(Long cardId);
+    List<CardTransferDto> getTransfersForCard(Long operatorId, Long cardId);
 }
