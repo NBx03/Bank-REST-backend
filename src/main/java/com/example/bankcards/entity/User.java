@@ -81,4 +81,14 @@ public class User extends AuditableEntity {
         roles.remove(role);
         role.getUsers().remove(this);
     }
+
+    public void addCard(Card card) {
+        cards.add(card);
+        card.setOwner(this);
+    }
+
+    public void removeCard(Card card) {
+        cards.remove(card);
+        card.setOwner(null);
+    }
 }
