@@ -6,10 +6,12 @@ import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.CardTransfer;
 import com.example.bankcards.entity.enums.CardStatus;
 import com.example.bankcards.entity.enums.TransferStatus;
+import com.example.bankcards.entity.enums.UserStatus;
 import com.example.bankcards.exception.CardInactiveException;
 import com.example.bankcards.exception.InsufficientFundsException;
 import com.example.bankcards.exception.InvalidTransferRequestException;
 import com.example.bankcards.exception.ResourceNotFoundException;
+import com.example.bankcards.exception.UserInactiveException;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.CardTransferRepository;
 import com.example.bankcards.service.CardLifecycleService;
@@ -79,6 +81,8 @@ public class TransferServiceImpl implements TransferService {
         fromCard = cardLifecycleService.refreshExpiration(fromCard);
         toCard = cardLifecycleService.refreshExpiration(toCard);
 
+        validateOwnerIsActive(fromCard);
+        validateOwnerIsActive(toCard);
         validateCardIsActive(fromCard);
         validateCardIsActive(toCard);
 
@@ -128,6 +132,12 @@ public class TransferServiceImpl implements TransferService {
     private void validateCardIsActive(Card card) {
         if (card.getStatus() != CardStatus.ACTIVE) {
             throw new CardInactiveException("Card " + card.getId() + " is not active");
+        }
+    }
+
+    private void validateOwnerIsActive(Card card) {
+        if (card.getOwner() != null && card.getOwner().getStatus() != UserStatus.ACTIVE) {
+            throw new UserInactiveException("Owner of card " + card.getId() + " is not active");
         }
     }
 

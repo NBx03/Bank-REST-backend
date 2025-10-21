@@ -5,9 +5,11 @@ import com.example.bankcards.dto.CreateCardRequestDto;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.enums.CardStatus;
+import com.example.bankcards.entity.enums.UserStatus;
 import com.example.bankcards.exception.CardInactiveException;
 import com.example.bankcards.exception.DuplicateResourceException;
 import com.example.bankcards.exception.ResourceNotFoundException;
+import com.example.bankcards.exception.UserInactiveException;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.service.CardLifecycleService;
@@ -47,6 +49,9 @@ public class CardServiceImpl implements CardService {
     public CardDto issueCard(Long userId, CreateCardRequestDto request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new UserInactiveException("User " + userId + " is not active");
+        }
 
         String normalizedNumber = normalizeCardNumber(request.cardNumber());
         String encrypted = cardNumberEncoder.encrypt(normalizedNumber);
@@ -77,10 +82,12 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public List<CardDto> getUserCards(Long userId) {
-        if (!userRepository.existsById(userId)) {
-            throw new ResourceNotFoundException("User not found: " + userId);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new UserInactiveException("User " + userId + " is not active");
         }
-        return cardRepository.findAllByOwnerId(userId).stream()
+        return cardRepository.findAllByOwnerId(user.getId()).stream()
                 .map(cardLifecycleService::refreshExpiration)
                 .map(cardMapper::toDto)
                 .collect(Collectors.toList());
