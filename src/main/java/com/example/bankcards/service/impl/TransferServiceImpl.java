@@ -34,12 +34,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class TransferServiceImpl implements TransferService {
 
     private static final Logger log = LoggerFactory.getLogger(TransferServiceImpl.class);
@@ -52,24 +54,6 @@ public class TransferServiceImpl implements TransferService {
     private final CardNumberEncoder cardNumberEncoder;
     private final CardTransferMapper cardTransferMapper;
     private final UserRepository userRepository;
-
-    public TransferServiceImpl(CardRepository cardRepository,
-                               CardTransferRepository cardTransferRepository,
-                               TransferLimitService transferLimitService,
-                               NotificationService notificationService,
-                               CardLifecycleService cardLifecycleService,
-                               CardNumberEncoder cardNumberEncoder,
-                               CardTransferMapper cardTransferMapper,
-                               UserRepository userRepository) {
-        this.cardRepository = cardRepository;
-        this.cardTransferRepository = cardTransferRepository;
-        this.transferLimitService = transferLimitService;
-        this.notificationService = notificationService;
-        this.cardLifecycleService = cardLifecycleService;
-        this.cardNumberEncoder = cardNumberEncoder;
-        this.cardTransferMapper = cardTransferMapper;
-        this.userRepository = userRepository;
-    }
 
     @Override
     @Transactional(dontRollbackOn = BankcardsException.class)

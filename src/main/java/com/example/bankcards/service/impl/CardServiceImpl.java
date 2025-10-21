@@ -24,11 +24,13 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CardServiceImpl implements CardService {
 
     private final CardRepository cardRepository;
@@ -36,18 +38,6 @@ public class CardServiceImpl implements CardService {
     private final CardMapper cardMapper;
     private final CardNumberEncoder cardNumberEncoder;
     private final CardLifecycleService cardLifecycleService;
-
-    public CardServiceImpl(CardRepository cardRepository,
-                           UserRepository userRepository,
-                           CardMapper cardMapper,
-                           CardNumberEncoder cardNumberEncoder,
-                           CardLifecycleService cardLifecycleService) {
-        this.cardRepository = cardRepository;
-        this.userRepository = userRepository;
-        this.cardMapper = cardMapper;
-        this.cardNumberEncoder = cardNumberEncoder;
-        this.cardLifecycleService = cardLifecycleService;
-    }
 
     @Override
     public CardDto issueCard(Long operatorId, Long userId, CreateCardRequestDto request) {

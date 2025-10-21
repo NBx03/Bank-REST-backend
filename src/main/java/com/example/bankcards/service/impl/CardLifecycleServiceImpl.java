@@ -5,16 +5,14 @@ import com.example.bankcards.entity.enums.CardStatus;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.service.CardLifecycleService;
 import java.time.LocalDate;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class CardLifecycleServiceImpl implements CardLifecycleService {
 
     private final CardRepository cardRepository;
-
-    public CardLifecycleServiceImpl(CardRepository cardRepository) {
-        this.cardRepository = cardRepository;
-    }
 
     @Override
     public Card refreshExpiration(Card card) {

@@ -16,7 +16,10 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Objects;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * Банковская карта пользователя.
@@ -25,6 +28,10 @@ import java.util.Objects;
 @Table(name = "cards", uniqueConstraints = {
         @UniqueConstraint(name = "uk_cards_card_number", columnNames = "card_number")
 })
+@Getter
+@Setter
+@NoArgsConstructor
+@EqualsAndHashCode(of = "id", callSuper = false)
 public class Card extends AuditableEntity {
 
     @Id
@@ -50,80 +57,4 @@ public class Card extends AuditableEntity {
 
     @Column(name = "balance", nullable = false, precision = 19, scale = 2)
     private BigDecimal balance = BigDecimal.ZERO;
-
-    public Card() {
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getEncryptedNumber() {
-        return encryptedNumber;
-    }
-
-    public void setEncryptedNumber(String encryptedNumber) {
-        this.encryptedNumber = encryptedNumber;
-    }
-
-    public String getLastDigits() {
-        return lastDigits;
-    }
-
-    public void setLastDigits(String lastDigits) {
-        this.lastDigits = lastDigits;
-    }
-
-    public User getOwner() {
-        return owner;
-    }
-
-    public void setOwner(User owner) {
-        this.owner = owner;
-    }
-
-    public LocalDate getExpirationDate() {
-        return expirationDate;
-    }
-
-    public void setExpirationDate(LocalDate expirationDate) {
-        this.expirationDate = expirationDate;
-    }
-
-    public CardStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(CardStatus status) {
-        this.status = status;
-    }
-
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        Card card = (Card) o;
-        return Objects.equals(id, card.id);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(id);
-    }
 }

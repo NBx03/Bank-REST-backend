@@ -2,59 +2,28 @@ package com.example.bankcards.config;
 
 import java.time.Duration;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "security")
+@Getter
 public class SecurityProperties {
 
     private final Jwt jwt = new Jwt();
 
-    public Jwt getJwt() {
-        return jwt;
-    }
-
+    @Getter
+    @Setter
     public static class Jwt {
-
         private String issuer;
         private String secret;
         private final Token accessToken = new Token();
         private final Token refreshToken = new Token();
-
-        public String getIssuer() {
-            return issuer;
-        }
-
-        public void setIssuer(String issuer) {
-            this.issuer = issuer;
-        }
-
-        public String getSecret() {
-            return secret;
-        }
-
-        public void setSecret(String secret) {
-            this.secret = secret;
-        }
-
-        public Token getAccessToken() {
-            return accessToken;
-        }
-
-        public Token getRefreshToken() {
-            return refreshToken;
-        }
     }
 
+    @Getter
+    @Setter
     public static class Token {
-
         private Duration ttl;
-
-        public Duration getTtl() {
-            return ttl;
-        }
-
-        public void setTtl(Duration ttl) {
-            this.ttl = ttl;
-        }
     }
 }

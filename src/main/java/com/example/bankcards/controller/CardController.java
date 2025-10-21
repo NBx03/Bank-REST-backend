@@ -8,6 +8,7 @@ import com.example.bankcards.service.CardService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -23,15 +24,11 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class CardController {
 
     private final CardService cardService;
     private final OperatorContextResolver operatorContextResolver;
-
-    public CardController(CardService cardService, OperatorContextResolver operatorContextResolver) {
-        this.cardService = cardService;
-        this.operatorContextResolver = operatorContextResolver;
-    }
 
     /**
      * Выпускает новую карту для пользователя.

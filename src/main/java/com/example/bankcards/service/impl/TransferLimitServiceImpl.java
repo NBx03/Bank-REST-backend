@@ -13,10 +13,12 @@ import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
 @Transactional(Transactional.TxType.SUPPORTS)
+@RequiredArgsConstructor
 public class TransferLimitServiceImpl implements TransferLimitService {
 
     private static final Set<TransferStatus> STATUSES_FOR_LIMIT = EnumSet.of(
@@ -26,12 +28,6 @@ public class TransferLimitServiceImpl implements TransferLimitService {
 
     private final CardTransferRepository cardTransferRepository;
     private final TransferProperties transferProperties;
-
-    public TransferLimitServiceImpl(CardTransferRepository cardTransferRepository,
-                                    TransferProperties transferProperties) {
-        this.cardTransferRepository = cardTransferRepository;
-        this.transferProperties = transferProperties;
-    }
 
     @Override
     public void validateDailyLimit(Long cardId, BigDecimal amount) {

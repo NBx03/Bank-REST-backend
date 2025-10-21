@@ -2,27 +2,19 @@ package com.example.bankcards.config;
 
 import java.math.BigDecimal;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "transfer")
+@Getter
 public class TransferProperties {
 
     private final Limit limit = new Limit();
 
-    public Limit getLimit() {
-        return limit;
-    }
-
+    @Getter
+    @Setter
     public static class Limit {
-
         private BigDecimal daily = new BigDecimal("50000.00");
-
-        public BigDecimal getDaily() {
-            return daily;
-        }
-
-        public void setDaily(BigDecimal daily) {
-            this.daily = daily;
-        }
     }
 }
