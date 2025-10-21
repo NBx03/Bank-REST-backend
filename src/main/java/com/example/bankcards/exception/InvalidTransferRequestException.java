@@ -1,11 +1,10 @@
 package com.example.bankcards.exception;
 
+import lombok.experimental.StandardException;
+
 /**
  * Исключение при некорректных параметрах перевода.
  */
+@StandardException
 public class InvalidTransferRequestException extends BankcardsException {
-
-    public InvalidTransferRequestException(String message) {
-        super(message);
-    }
 }

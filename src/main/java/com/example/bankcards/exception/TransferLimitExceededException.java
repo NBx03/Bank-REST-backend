@@ -1,10 +1,12 @@
 package com.example.bankcards.exception;
 
 import java.math.BigDecimal;
+import lombok.Getter;
 
 /**
  * Исключение превышения лимита переводов.
  */
+@Getter
 public class TransferLimitExceededException extends BankcardsException {
 
     private final BigDecimal allowedLimit;
@@ -14,7 +16,4 @@ public class TransferLimitExceededException extends BankcardsException {
         this.allowedLimit = allowedLimit;
     }
 
-    public BigDecimal getAllowedLimit() {
-        return allowedLimit;
-    }
 }

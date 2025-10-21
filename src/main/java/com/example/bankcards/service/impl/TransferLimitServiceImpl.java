@@ -37,7 +37,8 @@ public class TransferLimitServiceImpl implements TransferLimitService {
         }
         BigDecimal spent = calculateDailySpent(cardId);
         if (spent.add(amount).compareTo(limit) > 0) {
-            throw new TransferLimitExceededException("Daily transfer limit exceeded", limit);
+            String message = String.format("Daily transfer limit of %s exceeded", limit);
+            throw new TransferLimitExceededException(message, limit);
         }
     }
 
