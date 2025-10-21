@@ -47,7 +47,7 @@ public class CardTransfer extends AuditableEntity {
     @Column(name = "status", nullable = false, length = 20)
     private TransferStatus status = TransferStatus.PENDING;
 
-    @Column(name = "description", length = 255)
+    @Column(name = "description")
     private String description;
 
     public CardTransfer() {

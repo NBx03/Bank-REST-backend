@@ -22,7 +22,7 @@ public record CreateCardRequestDto(
         LocalDate expirationDate,
 
         @NotNull(message = "Initial balance is required")
-        @DecimalMin(value = "0.00", inclusive = true, message = "Initial balance must not be negative")
+        @DecimalMin(value = "0.00", message = "Initial balance must not be negative")
         @Digits(integer = 17, fraction = 2, message = "Amount must have up to 2 fractional digits")
         BigDecimal initialBalance
 ) {
