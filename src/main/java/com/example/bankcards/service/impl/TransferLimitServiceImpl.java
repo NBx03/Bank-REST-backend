@@ -1,6 +1,6 @@
 package com.example.bankcards.service.impl;
 
-import com.example.bankcards.config.TransferProperties;
+import com.example.bankcards.config.properties.TransferProperties;
 import com.example.bankcards.entity.CardTransfer;
 import com.example.bankcards.entity.enums.TransferStatus;
 import com.example.bankcards.exception.TransferLimitExceededException;

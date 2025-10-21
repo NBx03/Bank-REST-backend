@@ -2,8 +2,8 @@ package com.example.bankcards;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.example.bankcards.config.EncryptionProperties;
-import com.example.bankcards.config.SecurityProperties;
+import com.example.bankcards.config.properties.EncryptionProperties;
+import com.example.bankcards.config.properties.SecurityProperties;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

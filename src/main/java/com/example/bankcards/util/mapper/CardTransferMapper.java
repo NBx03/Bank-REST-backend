@@ -1,4 +1,4 @@
-package com.example.bankcards.util;
+package com.example.bankcards.util.mapper;
 
 import com.example.bankcards.dto.CardTransferDto;
 import com.example.bankcards.entity.CardTransfer;

@@ -1,12 +1,14 @@
 package com.example.bankcards.util;
 
-import com.example.bankcards.config.EncryptionProperties;
+import com.example.bankcards.config.properties.EncryptionProperties;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
+import jakarta.annotation.PostConstruct;
 import java.util.Arrays;
 import java.util.Base64;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -14,11 +16,14 @@ import org.springframework.util.Assert;
  * Утилита для шифрования и маскирования номеров карт.
  */
 @Component
+@RequiredArgsConstructor
 public class CardNumberEncoder {
 
-    private final SecretKeySpec secretKeySpec;
+    private final EncryptionProperties properties;
+    private SecretKeySpec secretKeySpec;
 
-    public CardNumberEncoder(EncryptionProperties properties) {
+    @PostConstruct
+    void init() {
         Assert.hasText(properties.getSecretKey(), "Encryption secret key must not be empty");
         byte[] keyBytes = properties.getSecretKey().getBytes(StandardCharsets.UTF_8);
         int keyLength = resolveKeyLength(keyBytes.length);

@@ -13,13 +13,14 @@ import com.example.bankcards.exception.ResourceNotFoundException;
 import com.example.bankcards.repository.RoleRepository;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.service.UserService;
-import com.example.bankcards.util.UserMapper;
+import com.example.bankcards.util.mapper.UserMapper;
 import jakarta.transaction.Transactional;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,6 +31,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDto registerUser(CreateUserRequestDto request) {
@@ -43,7 +45,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setEmail(request.email());
         user.setUsername(request.username());
-        user.setPassword(request.password());
+        user.setPassword(passwordEncoder.encode(request.password()));
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
         user.setStatus(UserStatus.ACTIVE);

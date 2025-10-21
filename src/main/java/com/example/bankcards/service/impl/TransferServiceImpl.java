@@ -23,7 +23,7 @@ import com.example.bankcards.service.TransferLimitService;
 import com.example.bankcards.service.TransferService;
 import com.example.bankcards.service.UserAccessService;
 import com.example.bankcards.util.CardNumberEncoder;
-import com.example.bankcards.util.CardTransferMapper;
+import com.example.bankcards.util.mapper.CardTransferMapper;
 import com.example.bankcards.util.ValidationUtils;
 import jakarta.transaction.Transactional;
 import java.math.BigDecimal;

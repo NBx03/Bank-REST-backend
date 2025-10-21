@@ -32,6 +32,7 @@ security:
   jwt:
     issuer: bank-rest
     secret: ${BANK_REST_JWT_SECRET:change-me}
+    algorithm: HS256
     access-token:
       ttl: PT15M
     refresh-token:
