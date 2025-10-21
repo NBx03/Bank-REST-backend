@@ -1,7 +1,7 @@
 package com.example.bankcards.exception;
 
 /**
- * Исключение, сигнализирующее о проблемах с идентификатором оператора в запросе.
+ * Исключение, сигнализирующее о проблемах с ID оператора в запросе.
  */
 public class InvalidOperatorContextException extends BankcardsException {
 

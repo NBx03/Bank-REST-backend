@@ -46,7 +46,7 @@ public class CardController {
     }
 
     /**
-     * Возвращает сведения о карте по идентификатору.
+     * Возвращает сведения о карте по ID.
      */
     @GetMapping("/cards/{cardId}")
     public CardDto getCard(@PathVariable Long cardId, HttpServletRequest httpRequest) {

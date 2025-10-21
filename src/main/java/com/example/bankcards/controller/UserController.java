@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * REST-контроллер управления пользователями.
+ * REST-контроллер для управления пользователями.
  */
 @RestController
 @RequestMapping("/api/users")
@@ -41,7 +41,7 @@ public class UserController {
     }
 
     /**
-     * Возвращает пользователя по идентификатору.
+     * Возвращает пользователя по ID.
      */
     @GetMapping("/{id}")
     public UserDto getUser(@PathVariable Long id) {
