@@ -3,10 +3,8 @@ package com.example.bankcards.service.impl;
 import com.example.bankcards.dto.CardDto;
 import com.example.bankcards.dto.CreateCardRequestDto;
 import com.example.bankcards.entity.Card;
-import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.enums.CardStatus;
-import com.example.bankcards.entity.enums.RoleType;
 import com.example.bankcards.entity.enums.UserStatus;
 import com.example.bankcards.exception.AccessDeniedException;
 import com.example.bankcards.exception.CardInactiveException;
@@ -17,6 +15,7 @@ import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.service.CardLifecycleService;
 import com.example.bankcards.service.CardService;
+import com.example.bankcards.service.UserAccessService;
 import com.example.bankcards.util.CardMapper;
 import com.example.bankcards.util.CardNumberEncoder;
 import jakarta.transaction.Transactional;
@@ -38,10 +37,11 @@ public class CardServiceImpl implements CardService {
     private final CardMapper cardMapper;
     private final CardNumberEncoder cardNumberEncoder;
     private final CardLifecycleService cardLifecycleService;
+    private final UserAccessService userAccessService;
 
     @Override
     public CardDto issueCard(Long operatorId, Long userId, CreateCardRequestDto request) {
-        User operator = requireActiveUser(operatorId);
+        User operator = userAccessService.requireActiveUser(operatorId);
         ensureCanManageUser(operator, userId);
 
         User user = userRepository.findById(userId)
@@ -71,7 +71,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public CardDto getCard(Long operatorId, Long cardId) {
-        User operator = requireActiveUser(operatorId);
+        User operator = userAccessService.requireActiveUser(operatorId);
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found: " + cardId));
         ensureCanViewCard(operator, card);
@@ -81,7 +81,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public List<CardDto> getUserCards(Long operatorId, Long userId) {
-        User operator = requireActiveUser(operatorId);
+        User operator = userAccessService.requireActiveUser(operatorId);
         ensureCanManageUser(operator, userId);
 
         User user = userRepository.findById(userId)
@@ -97,7 +97,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     public CardDto changeStatus(Long operatorId, Long cardId, CardStatus newStatus) {
-        User operator = requireActiveUser(operatorId);
+        User operator = userAccessService.requireActiveUser(operatorId);
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found: " + cardId));
         card = cardLifecycleService.refreshExpiration(card);
@@ -123,40 +123,31 @@ public class CardServiceImpl implements CardService {
         return cardNumber.replaceAll("\\s", "");
     }
 
-    private User requireActiveUser(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
-        if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new UserInactiveException("User " + userId + " is not active");
-        }
-        return user;
-    }
-
     private void ensureCanManageUser(User operator, Long targetUserId) {
-        if (isAdmin(operator)) {
+        if (userAccessService.isAdmin(operator)) {
             return;
         }
-        ensureUserRole(operator);
+        userAccessService.ensureUserRole(operator);
         if (!operator.getId().equals(targetUserId)) {
             throw new AccessDeniedException("User " + operator.getId() + " cannot manage cards of user " + targetUserId);
         }
     }
 
     private void ensureCanViewCard(User operator, Card card) {
-        if (isAdmin(operator)) {
+        if (userAccessService.isAdmin(operator)) {
             return;
         }
-        ensureUserRole(operator);
+        userAccessService.ensureUserRole(operator);
         if (card.getOwner() == null || !card.getOwner().getId().equals(operator.getId())) {
             throw new AccessDeniedException("User " + operator.getId() + " cannot view card " + card.getId());
         }
     }
 
     private void ensureCanChangeStatus(User operator, Card card, CardStatus newStatus) {
-        if (isAdmin(operator)) {
+        if (userAccessService.isAdmin(operator)) {
             return;
         }
-        ensureUserRole(operator);
+        userAccessService.ensureUserRole(operator);
         if (card.getOwner() == null || !card.getOwner().getId().equals(operator.getId())) {
             throw new AccessDeniedException("User " + operator.getId() + " cannot change status of card " + card.getId());
         }
@@ -166,19 +157,5 @@ public class CardServiceImpl implements CardService {
         if (newStatus != CardStatus.ACTIVE && newStatus != CardStatus.BLOCKED) {
             throw new AccessDeniedException("Unsupported status change for non-admin user");
         }
-    }
-
-    private boolean isAdmin(User user) {
-        return hasRole(user.getRoles(), RoleType.ADMIN);
-    }
-
-    private void ensureUserRole(User user) {
-        if (!hasRole(user.getRoles(), RoleType.USER)) {
-            throw new AccessDeniedException("User " + user.getId() + " must have USER role for this operation");
-        }
-    }
-
-    private boolean hasRole(Set<Role> roles, RoleType roleType) {
-        return roles.stream().anyMatch(role -> role.getName() == roleType);
     }
 }
