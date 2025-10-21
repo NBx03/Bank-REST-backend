@@ -54,10 +54,6 @@ public class SecurityProperties {
 
             @Setter(AccessLevel.NONE)
             private List<String> audience = List.of();
-
-            public void setAudience(List<String> audience) {
-                this.audience = audience == null ? List.of() : List.copyOf(audience);
-            }
         }
     }
 }

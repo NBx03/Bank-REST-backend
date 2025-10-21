@@ -94,7 +94,7 @@ class TransferControllerTest {
         mockMvc.perform(get("/api/cards/5/limits/daily")
                         .header(OperatorContextResolver.OPERATOR_HEADER, "10"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.remaining", equalTo(2500.0)));
+                .andExpect(jsonPath("$.remaining", equalTo(2500)));
     }
 
     @Test

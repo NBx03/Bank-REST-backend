@@ -3,6 +3,7 @@ package com.example.bankcards.config;
 import com.example.bankcards.security.filter.JwtAuthenticationFilter;
 import com.example.bankcards.security.handler.RestAccessDeniedHandler;
 import com.example.bankcards.security.handler.RestAuthenticationEntryPoint;
+import com.example.bankcards.security.jwt.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -56,6 +57,11 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
+        return new JwtAuthenticationFilter(jwtTokenProvider);
     }
 
     @Bean

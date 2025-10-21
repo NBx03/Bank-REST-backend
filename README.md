@@ -112,7 +112,7 @@ java -jar target/bank-rest-0.0.1-SNAPSHOT.jar
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"username":"john.doe","password":"Secret123"}'
+  -d '{"username":"my.name","password":"Secret123"}'
 
 curl http://localhost:8080/api/users/1 \
   -H 'Authorization: Bearer <accessToken>'

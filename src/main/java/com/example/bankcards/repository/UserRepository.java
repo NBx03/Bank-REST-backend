@@ -2,6 +2,7 @@ package com.example.bankcards.repository;
 
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.enums.UserStatus;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,9 +19,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @EntityGraph(attributePaths = "roles")
     Optional<User> findByUsername(String username);
 
+    @Override
+    @EntityGraph(attributePaths = "roles")
+    List<User> findAll();
+
     boolean existsByEmail(String email);
 
     boolean existsByUsername(String username);
-
-    long countByStatus(UserStatus status);
 }

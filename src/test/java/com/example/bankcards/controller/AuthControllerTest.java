@@ -68,7 +68,7 @@ class AuthControllerTest {
                         .content("{\"username\":\"john\",\"password\":\"\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", equalTo("Validation failed")))
-                .andExpect(jsonPath("$.validationErrors", hasSize(1)));
+                .andExpect(jsonPath("$.validationErrors", hasSize(2)));
 
         verify(authenticationService, never()).authenticate(any());
     }
