@@ -6,6 +6,7 @@ import com.example.bankcards.dto.CardTransferRequestDto;
 import com.example.bankcards.dto.CreateCardRequestDto;
 import com.example.bankcards.dto.CreateUserRequestDto;
 import com.example.bankcards.dto.DailyLimitDto;
+import com.example.bankcards.dto.UpdateCardRequestDto;
 import com.example.bankcards.dto.UpdateCardStatusRequestDto;
 import com.example.bankcards.dto.UpdateUserRolesRequestDto;
 import com.example.bankcards.dto.UpdateUserStatusRequestDto;
@@ -22,6 +23,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 /**
  * Утилиты для подготовки типичных DTO в тестах.
@@ -74,8 +77,12 @@ public final class TestDataFactory {
         return new UpdateCardStatusRequestDto(status);
     }
 
+    public static UpdateCardRequestDto updateCardRequest(CardStatus status) {
+        return new UpdateCardRequestDto(LocalDate.now().plusYears(3), status);
+    }
+
     public static CardDto cardDto(Long id) {
-        return new CardDto(id, "4444", LocalDate.now().plusYears(2), CardStatus.ACTIVE, BigDecimal.valueOf(1000));
+        return new CardDto(id, "**** **** **** 4444", LocalDate.now().plusYears(2), CardStatus.ACTIVE, BigDecimal.valueOf(1000));
     }
 
     public static CardTransferRequestDto transferRequest() {
@@ -115,8 +122,8 @@ public final class TestDataFactory {
         return new JwtResponseDto("Bearer", "access", "refresh", 900L, 604800L);
     }
 
-    public static List<CardDto> cardList() {
-        return List.of(cardDto(1L));
+    public static Page<CardDto> cardPage() {
+        return new PageImpl<>(List.of(cardDto(1L)));
     }
 
     public static List<CardTransferDto> transferList() {

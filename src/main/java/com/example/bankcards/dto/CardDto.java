@@ -9,7 +9,7 @@ import java.time.LocalDate;
  */
 public record CardDto(
         Long id,
-        String lastDigits,
+        String maskedNumber,
         LocalDate expirationDate,
         CardStatus status,
         BigDecimal balance

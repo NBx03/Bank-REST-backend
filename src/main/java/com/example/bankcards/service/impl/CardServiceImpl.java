@@ -2,6 +2,7 @@ package com.example.bankcards.service.impl;
 
 import com.example.bankcards.dto.CardDto;
 import com.example.bankcards.dto.CreateCardRequestDto;
+import com.example.bankcards.dto.UpdateCardRequestDto;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.enums.CardStatus;
@@ -9,9 +10,11 @@ import com.example.bankcards.entity.enums.UserStatus;
 import com.example.bankcards.exception.AccessDeniedException;
 import com.example.bankcards.exception.CardInactiveException;
 import com.example.bankcards.exception.DuplicateResourceException;
+import com.example.bankcards.exception.InvalidCardOperationException;
 import com.example.bankcards.exception.ResourceNotFoundException;
 import com.example.bankcards.exception.UserInactiveException;
 import com.example.bankcards.repository.CardRepository;
+import com.example.bankcards.repository.CardTransferRepository;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.service.CardLifecycleService;
 import com.example.bankcards.service.CardService;
@@ -20,12 +23,15 @@ import com.example.bankcards.util.mapper.CardMapper;
 import com.example.bankcards.util.CardNumberEncoder;
 import jakarta.transaction.Transactional;
 import java.math.RoundingMode;
-import java.util.List;
-import java.util.stream.Collectors;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+/**
+ * Реализация {@link CardService}.
+ */
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -33,6 +39,7 @@ public class CardServiceImpl implements CardService {
 
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
+    private final CardTransferRepository cardTransferRepository;
     private final CardMapper cardMapper;
     private final CardNumberEncoder cardNumberEncoder;
     private final CardLifecycleService cardLifecycleService;
@@ -79,7 +86,10 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public List<CardDto> getUserCards(Long operatorId, Long userId) {
+    public Page<CardDto> getUserCards(Long operatorId,
+                                      Long userId,
+                                      CardStatus status,
+                                      Pageable pageable) {
         User operator = userAccessService.requireActiveUser(operatorId);
         ensureCanManageUser(operator, userId);
 
@@ -88,10 +98,12 @@ public class CardServiceImpl implements CardService {
         if (user.getStatus() != UserStatus.ACTIVE) {
             throw new UserInactiveException("User " + userId + " is not active");
         }
-        return cardRepository.findAllByOwnerId(user.getId()).stream()
+        Page<Card> cardsPage = status == null
+                ? cardRepository.findAllByOwnerId(user.getId(), pageable)
+                : cardRepository.findAllByOwnerIdAndStatus(user.getId(), status, pageable);
+        return cardsPage
                 .map(cardLifecycleService::refreshExpiration)
-                .map(cardMapper::toDto)
-                .collect(Collectors.toList());
+                .map(cardMapper::toDto);
     }
 
     @Override
@@ -100,19 +112,37 @@ public class CardServiceImpl implements CardService {
         Card card = cardRepository.findById(cardId)
                 .orElseThrow(() -> new ResourceNotFoundException("Card not found: " + cardId));
         card = cardLifecycleService.refreshExpiration(card);
-        ensureCanChangeStatus(operator, card, newStatus);
-        if (card.getStatus() == newStatus) {
-            return cardMapper.toDto(card);
-        }
-        if (card.getStatus() == CardStatus.BLOCKED && newStatus == CardStatus.CLOSED) {
-            throw new CardInactiveException("Blocked card cannot be directly closed");
-        }
-        if (card.getStatus() == CardStatus.EXPIRED && newStatus == CardStatus.ACTIVE) {
-            throw new CardInactiveException("Expired card cannot be reactivated");
-        }
-        card.setStatus(newStatus);
+        applyStatusChange(operator, card, newStatus);
         cardRepository.save(card);
         return cardMapper.toDto(card);
+    }
+
+    @Override
+    public CardDto updateCard(Long operatorId, Long cardId, UpdateCardRequestDto request) {
+        User operator = userAccessService.requireActiveUser(operatorId);
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found: " + cardId));
+        card = cardLifecycleService.refreshExpiration(card);
+        ensureCanModifyCard(operator, card);
+
+        card.setExpirationDate(request.expirationDate());
+        if (request.status() != null && request.status() != card.getStatus()) {
+            applyStatusChange(operator, card, request.status());
+        }
+        cardRepository.save(card);
+        return cardMapper.toDto(card);
+    }
+
+    @Override
+    public void deleteCard(Long operatorId, Long cardId) {
+        User operator = userAccessService.requireActiveUser(operatorId);
+        Card card = cardRepository.findById(cardId)
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found: " + cardId));
+        ensureCanModifyCard(operator, card);
+        if (cardTransferRepository.existsByFromCardIdOrToCardId(card.getId(), card.getId())) {
+            throw new InvalidCardOperationException("Card " + cardId + " cannot be deleted because transfers exist");
+        }
+        cardRepository.delete(card);
     }
 
     private String normalizeCardNumber(String cardNumber) {
@@ -157,4 +187,29 @@ public class CardServiceImpl implements CardService {
             throw new AccessDeniedException("Unsupported status change for non-admin user");
         }
     }
+
+    private void ensureCanModifyCard(User operator, Card card) {
+        if (userAccessService.isAdmin(operator)) {
+            return;
+        }
+        userAccessService.ensureUserRole(operator);
+        if (card.getOwner() == null || !card.getOwner().getId().equals(operator.getId())) {
+            throw new AccessDeniedException("User " + operator.getId() + " cannot modify card " + card.getId());
+        }
+    }
+
+    private void applyStatusChange(User operator, Card card, CardStatus newStatus) {
+        ensureCanChangeStatus(operator, card, newStatus);
+        if (card.getStatus() == newStatus) {
+            return;
+        }
+        if (card.getStatus() == CardStatus.BLOCKED && newStatus == CardStatus.CLOSED) {
+            throw new CardInactiveException("Blocked card cannot be directly closed");
+        }
+        if (card.getStatus() == CardStatus.EXPIRED && newStatus == CardStatus.ACTIVE) {
+            throw new CardInactiveException("Expired card cannot be reactivated");
+        }
+        card.setStatus(newStatus);
+    }
+
 }

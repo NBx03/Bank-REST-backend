@@ -36,6 +36,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+/**
+ * Реализация {@link TransferService}.
+ */
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -74,7 +77,7 @@ public class TransferServiceImpl implements TransferService {
         fromCard = cardLifecycleService.refreshExpiration(fromCard);
         toCard = cardLifecycleService.refreshExpiration(toCard);
 
-        ensureCanInitiateTransfer(operator, fromCard);
+        ensureCanInitiateTransfer(operator, fromCard, toCard);
 
         CardTransfer transfer = new CardTransfer();
         transfer.setFromCard(fromCard);
@@ -149,13 +152,17 @@ public class TransferServiceImpl implements TransferService {
         return cardNumber.replaceAll("\\s", "");
     }
 
-    private void ensureCanInitiateTransfer(User operator, Card fromCard) {
+    private void ensureCanInitiateTransfer(User operator, Card fromCard, Card toCard) {
         if (userAccessService.isAdmin(operator)) {
             return;
         }
         userAccessService.ensureUserRole(operator);
-        if (fromCard.getOwner() == null || !fromCard.getOwner().getId().equals(operator.getId())) {
-            throw new AccessDeniedException("User " + operator.getId() + " cannot initiate transfer from card " + fromCard.getId());
+        Long operatorId = operator.getId();
+        if (fromCard.getOwner() == null || !fromCard.getOwner().getId().equals(operatorId)) {
+            throw new AccessDeniedException("User " + operatorId + " cannot initiate transfer from card " + fromCard.getId());
+        }
+        if (toCard.getOwner() == null || !toCard.getOwner().getId().equals(operatorId)) {
+            throw new AccessDeniedException("User " + operatorId + " cannot transfer funds to card " + toCard.getId());
         }
     }
 

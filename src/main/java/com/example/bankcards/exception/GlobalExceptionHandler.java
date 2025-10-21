@@ -46,7 +46,8 @@ public class GlobalExceptionHandler {
             CardInactiveException.class,
             TransferLimitExceededException.class,
             InsufficientFundsException.class,
-            InvalidTransferRequestException.class
+            InvalidTransferRequestException.class,
+            InvalidCardOperationException.class
     })
     public ResponseEntity<ErrorResponse> handleUnprocessableEntity(BankcardsException ex, HttpServletRequest request) {
         Map<String, Object> details = null;
