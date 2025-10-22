@@ -28,7 +28,7 @@ Bank REST - backend-проект, реализующий REST API для упр�
 ### 1. Клонирование репозитория
 ```bash
 git clone https://github.com/NBx03/Bank-REST-backend.git
-cd bank_rest
+cd Bank-REST-backend
 ```
 
 ### 2. Настройка переменных окружения
